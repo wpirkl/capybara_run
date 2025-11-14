@@ -47,9 +47,9 @@ fn setup_ground(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     // Load ground textures
-    let dirt_texture = asset_server.load("textures/ground/dirt.png");
-    let grass_texture = asset_server.load("textures/ground/grass.png");
-    let water_texture = asset_server.load("textures/ground/water.png");
+    let dirt_texture = asset_server.load("textures/ground/dirt_top.png");
+    let grass_texture = asset_server.load("textures/ground/grass_top.png");
+    let water_texture = asset_server.load("textures/ground/water_top.png");
 
     // Create texture atlas layout (1 sprite, 240x240)
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(240), 1, 1, None, None);
@@ -82,8 +82,8 @@ fn spawn_ground_tile(
     layout: &Handle<TextureAtlasLayout>,
 ) {
     // Randomly choose a ground type
-    let mut rng = rand::thread_rng();
-    let ground_type = match rng.gen_range(0..3) {
+    let mut rng = rand::rng();
+    let ground_type = match rng.random_range(0..3) {
         0 => GroundType::Dirt,
         1 => GroundType::Grass,
         _ => GroundType::Water,
@@ -104,7 +104,7 @@ fn spawn_ground_tile(
             }),
             ..default()
         },
-        Transform::from_xyz(x, GROUND_Y + (WINDOW_HEIGHT * 0.33) - SCALED_TILE_SIZE * 0.75, 0.0).with_scale(Vec3::splat(TILE_SCALE)),
+        Transform::from_xyz(x, GROUND_Y + (WINDOW_HEIGHT * 0.33), 1.0).with_scale(Vec3::splat(TILE_SCALE)),
         GroundTile,
         ground_type,
     ));
