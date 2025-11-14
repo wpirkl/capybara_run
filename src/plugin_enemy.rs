@@ -51,9 +51,9 @@ fn setup_enemies(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     // Load enemy spritesheets
-    let eagle_texture = asset_server.load("textures/eagle.png");
-    let lion_texture = asset_server.load("textures/lion.png");
-    let croco_texture = asset_server.load("textures/crocodile.png");
+    let eagle_texture = asset_server.load("textures/enemies/eagle/flying.png");
+    let lion_texture = asset_server.load("textures/enemies/lion/running.png");
+    let croco_texture = asset_server.load("textures/enemies/crocodile/running.png");
 
     // Create layouts for each enemy type
     // Eagle: 1 sprite (1 row, 1 column) - assume 240x240 like player
@@ -122,7 +122,7 @@ fn setup_enemies(
             }),
             ..default()
         },
-        Transform::from_xyz(enemy_x, enemy_y - 120.0, 0.0).with_scale(Vec3::splat(0.5)),
+        Transform::from_xyz(enemy_x - 120., enemy_y, 0.0).with_scale(Vec3::splat(0.5)),
         EnemySprite,
         EnemyType::Croco,
         animation_config,

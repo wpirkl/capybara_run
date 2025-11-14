@@ -68,9 +68,9 @@ fn setup_player(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     // Load all spritesheets
-    let running_texture = asset_server.load("textures/capybara_running.png");
-    let jumping_texture = asset_server.load("textures/capybara_jumping.png");
-    let dead_texture = asset_server.load("textures/capybara_dead.png");
+    let running_texture = asset_server.load("textures/player/running.png");
+    let jumping_texture = asset_server.load("textures/player/jumping.png");
+    let dead_texture = asset_server.load("textures/player/dead.png");
 
     // Create layouts for each spritesheet
     // Running: 2 sprites in 1 row, 2 columns (240x240 each)

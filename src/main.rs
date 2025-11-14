@@ -9,6 +9,9 @@ use plugin_player::PlayerPlugin;
 mod plugin_enemy;
 use plugin_enemy::EnemyPlugin;
 
+mod plugin_ground;
+use plugin_ground::GroundPlugin;
+
 fn main() {
     App::new()
         .add_plugins(
@@ -28,6 +31,7 @@ fn main() {
         .add_systems(Startup, setup_camera)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
+        .add_plugins(GroundPlugin)
         .run();
 }
 
