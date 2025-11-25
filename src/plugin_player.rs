@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::{Game, GameState, GameEnd};
+use crate::model::{GameData, GameEnd, GameState, PlayerJump};
 use crate::plugin_enemy::EnemySprite;
 
 pub struct PlayerPlugin;
@@ -12,8 +12,9 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
-           .add_systems(Update, (handle_input, execute_animations, update_jump))
-           .add_systems(FixedUpdate, check_for_collisions);
+           .add_systems(Update, (execute_animations, update_jump))
+           .add_systems(FixedUpdate, check_for_collisions)
+           .add_observer(handle_input);
     }
 }
 
@@ -91,8 +92,8 @@ fn setup_player(
     let dead_layout_handle = texture_atlas_layouts.add(dead_layout);
 
     // Calculate player position
-    let player_x = -600.0 + (1200.0 * 0.20);
-    let player_y = -400.0 + (800.0 * 0.33);
+    let player_x = PLAYER_X;
+    let player_y = PLAYER_GROUND;
 
     // Running animation config (4 FPS, 2 frames)
     let animation_config = AnimationConfig::new(0, 1, 4);
@@ -107,7 +108,7 @@ fn setup_player(
             }),
             ..default()
         },
-        Transform::from_xyz(player_x, player_y, 0.0).with_scale(Vec3::splat(0.5)),
+        Transform::from_xyz(player_x, player_y, 0.0).with_scale(Vec3::splat(TILE_SCALE)),
         PlayerSprite,
         PlayerState::Running,
         animation_config,
@@ -129,12 +130,12 @@ fn setup_player(
 
 
 fn handle_input(
-    keyboard: Res<ButtonInput<KeyCode>>,
+    _jump: On<PlayerJump>,
     mut query: Query<(&mut PlayerState, &Jump), With<PlayerSprite>>,
 ) {
     for (mut state, jump) in &mut query {
         // Only allow jumping if on ground and in running state
-        if keyboard.just_pressed(KeyCode::Space) && *state == PlayerState::Running && jump.velocity == 0.0 {
+        if *state == PlayerState::Running && jump.velocity == 0.0 {
             *state = PlayerState::Jumping;
         }
     }
@@ -143,7 +144,7 @@ fn handle_input(
 
 fn update_jump(
     time: Res<Time>,
-    game: Res<Game>,
+    game: Res<GameData>,
     mut query: Query<(&mut Transform, &mut Jump, &mut PlayerState, &mut Sprite), With<PlayerSprite>>,
 ) {
     for (mut transform, mut jump, mut state, mut sprite) in &mut query {
@@ -195,9 +196,9 @@ fn execute_animations(
     )>,
 ) {
     for (mut config, mut sprite, state, spritesheets) in &mut query {
-        // Switch spritesheet based on state
         match state {
             PlayerState::Running => {
+                
                 if sprite.image != spritesheets.running_texture {
                     sprite.image = spritesheets.running_texture.clone();
                     if let Some(atlas) = &mut sprite.texture_atlas {
@@ -249,7 +250,6 @@ fn execute_animations(
 
 fn check_for_collisions(
     mut commands: Commands,
-    mut game: ResMut<Game>,
     mut player_query: Query<(&Transform, &mut PlayerState), With<PlayerSprite>>,
     enemy_query: Query<(&Transform), With<EnemySprite>>,
 ) {
@@ -261,15 +261,12 @@ fn check_for_collisions(
             
             if distance < COLLISION_RADIUS
             {
-                match *player_state {
-                    PlayerState::Running => {
-                        *player_state = PlayerState::Dead;
-                    }
-                    _ => {}
+                // if the player is jumping, let it land first
+                if *player_state == PlayerState::Running {
+
+                    *player_state = PlayerState::Dead;
                 }
 
-                // *player_state = PlayerState::Dead;
-                game.game_state = GameState::Dead;
                 commands.trigger(GameEnd);
             }
         }

@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::Game;
+use crate::model::GameData;
 
 #[derive(Component)]
 struct ScoreboardUi;
@@ -46,7 +46,7 @@ fn setup_scoreboard(mut commands: Commands)
 }
 
 fn update_scoreboard(
-    game: Res<Game>,
+    game: Res<GameData>,
     score_root: Single<Entity, (With<ScoreboardUi>, With<Text>)>,
     mut writer: TextUiWriter,
 ) {

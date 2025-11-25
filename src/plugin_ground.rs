@@ -31,6 +31,7 @@ struct GroundTextures {
     dirt: Handle<Image>,
     grass: Handle<Image>,
     water: Handle<Image>,
+    sign: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
 }
 
@@ -43,7 +44,8 @@ fn setup_ground(
     let dirt_texture = asset_server.load("textures/ground/dirt_top.png");
     let grass_texture = asset_server.load("textures/ground/grass_top.png");
     let water_texture = asset_server.load("textures/ground/water_top.png");
-
+    let sign_texture = asset_server.load("textures/ground/distance_sign.png");
+    
     // Create texture atlas layout (1 sprite, 240x240)
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(240), 1, 1, None, None);
     let layout_handle = texture_atlas_layouts.add(layout);
@@ -53,6 +55,7 @@ fn setup_ground(
         dirt: dirt_texture.clone(),
         grass: grass_texture.clone(),
         water: water_texture.clone(),
+        sign: sign_texture.clone(),
         layout: layout_handle.clone(),
     });
 
@@ -65,6 +68,7 @@ fn setup_ground(
         spawn_ground_tile(&mut commands, x, &dirt_texture, &grass_texture, &water_texture, &layout_handle);
     }
 }
+
 
 fn spawn_ground_tile(
     commands: &mut Commands,
@@ -106,42 +110,47 @@ fn spawn_ground_tile(
 fn move_ground(
     mut commands: Commands,
     time: Res<Time>,
-    game: Res<Game>,
+    game: Res<GameData>,
     textures: Res<GroundTextures>,
     mut query: Query<(Entity, &mut Transform), With<GroundTile>>,
 ) {
-    let move_distance = game.velocity * time.delta_secs();
-    let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
-    let right_edge = WINDOW_WIDTH / 2.0;
+    match game.game_state {
+        GameState::Running => {
+            let move_distance = game.velocity * time.delta_secs();
+            let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
+            let right_edge = WINDOW_WIDTH / 2.0;
 
-    let mut rightmost_x = f32::MIN;
+            let mut rightmost_x = f32::MIN;
 
-    for (entity, mut transform) in &mut query {
-        // Move tile to the left
-        transform.translation.x -= move_distance;
+            for (entity, mut transform) in &mut query {
+                // Move tile to the left
+                transform.translation.x -= move_distance;
 
-        // Track the rightmost tile position
-        if transform.translation.x > rightmost_x {
-            rightmost_x = transform.translation.x;
+                // Track the rightmost tile position
+                if transform.translation.x > rightmost_x {
+                    rightmost_x = transform.translation.x;
+                }
+
+                // If tile has moved off the left edge, despawn it
+                if transform.translation.x < left_edge {
+                    commands.entity(entity).despawn();
+                }
+            }
+
+            // Check if we need to spawn a new tile on the right
+            // Spawn when the rightmost tile has moved far enough left to leave a gap
+            if rightmost_x < right_edge - SCALED_TILE_SIZE / 2.0 {
+                let new_x = rightmost_x + SCALED_TILE_SIZE;
+                spawn_ground_tile(
+                    &mut commands,
+                    new_x,
+                    &textures.dirt,
+                    &textures.grass,
+                    &textures.water,
+                    &textures.layout,
+                );
+            }
         }
-
-        // If tile has moved off the left edge, despawn it
-        if transform.translation.x < left_edge {
-            commands.entity(entity).despawn();
-        }
-    }
-
-    // Check if we need to spawn a new tile on the right
-    // Spawn when the rightmost tile has moved far enough left to leave a gap
-    if rightmost_x < right_edge - SCALED_TILE_SIZE / 2.0 {
-        let new_x = rightmost_x + SCALED_TILE_SIZE;
-        spawn_ground_tile(
-            &mut commands,
-            new_x,
-            &textures.dirt,
-            &textures.grass,
-            &textures.water,
-            &textures.layout,
-        );
+        _ => {}
     }
 }

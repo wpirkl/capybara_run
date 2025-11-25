@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::Game;
+use crate::model::{GameData, GameState};
 
 pub struct EnemyPlugin;
 
@@ -76,7 +76,7 @@ fn setup_enemies(
     // Window size: 1200 x 800
     // Right side position, 33% from bottom
     let enemy_x = 600.0 - 100.0; // Near right edge (leaving some margin)
-    let enemy_y = -400.0 + (800.0 * 0.33);
+    let enemy_y = PLAYER_GROUND;
 
     let animation_config = AnimationConfig::new(0, 0, 1);
 
@@ -90,7 +90,7 @@ fn setup_enemies(
             }),
             ..default()
         },
-        Transform::from_xyz(enemy_x, enemy_y + 120.0, 0.0).with_scale(Vec3::splat(0.5)),
+        Transform::from_xyz(enemy_x, enemy_y + 120.0, 0.0).with_scale(Vec3::splat(TILE_SCALE)),
         EnemySprite,
         EnemyType::Eagle,
         animation_config,
@@ -108,7 +108,7 @@ fn setup_enemies(
             }),
             ..default()
         },
-        Transform::from_xyz(enemy_x, enemy_y + 0.0, 0.0).with_scale(Vec3::splat(0.5)),
+        Transform::from_xyz(enemy_x, enemy_y + 0.0, 0.0).with_scale(Vec3::splat(TILE_SCALE)),
         EnemySprite,
         EnemyType::Lion,
         animation_config,
@@ -126,7 +126,7 @@ fn setup_enemies(
             }),
             ..default()
         },
-        Transform::from_xyz(enemy_x - 120., enemy_y, 0.0).with_scale(Vec3::splat(0.5)),
+        Transform::from_xyz(enemy_x - 120., enemy_y, 0.0).with_scale(Vec3::splat(TILE_SCALE)),
         EnemySprite,
         EnemyType::Croco,
         animation_config,
@@ -158,27 +158,32 @@ fn execute_animations(
 fn move_enemy(
     mut commands: Commands,
     time: Res<Time>,
-    game: Res<Game>,
+    game: Res<GameData>,
     mut query: Query<(Entity, &mut Transform), With<EnemySprite>>,
 ) {
-    let move_distance = game.velocity * time.delta_secs();
-    let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
-    let right_edge = WINDOW_WIDTH / 2.0;
+    match game.game_state {
+        GameState::Running => {
+            let move_distance = game.velocity * time.delta_secs();
+            let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
+            let right_edge = WINDOW_WIDTH / 2.0;
 
-    let mut rightmost_x = f32::MIN;
+            let mut rightmost_x = f32::MIN;
 
-    for (entity, mut transform) in &mut query {
-        // Move tile to the left
-        transform.translation.x -= move_distance;
+            for (entity, mut transform) in &mut query {
+                // Move tile to the left
+                transform.translation.x -= move_distance;
 
-        // Track the rightmost tile position
-        if transform.translation.x > rightmost_x {
-            rightmost_x = transform.translation.x;
+                // Track the rightmost tile position
+                if transform.translation.x > rightmost_x {
+                    rightmost_x = transform.translation.x;
+                }
+
+                // If tile has moved off the left edge, despawn it
+                if transform.translation.x < left_edge {
+                    commands.entity(entity).despawn();
+                }
+            }
         }
-
-        // If tile has moved off the left edge, despawn it
-        if transform.translation.x < left_edge {
-            commands.entity(entity).despawn();
-        }
+        _ => {}
     }
 }

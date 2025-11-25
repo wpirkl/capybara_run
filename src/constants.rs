@@ -9,6 +9,9 @@ pub const WINDOW_HEIGHT: f32 = 800.;
 pub const INITIAL_VELOCITY: f32 = 200.;
 pub const COLLISION_RADIUS: f32 = 60.;
 
+pub const PLAYER_X: f32 = -600.0 + (WINDOW_WIDTH * 0.20);
+pub const PLAYER_GROUND: f32 = GROUND_Y + (WINDOW_HEIGHT * 0.33);
+
 pub const SCOREBOARD_FONT_SIZE: f32 = 33.;
 pub const TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.);
 pub const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);

@@ -21,7 +21,11 @@ use plugin_enemy::EnemyPlugin;
 mod plugin_ground;
 use plugin_ground::GroundPlugin;
 
+mod plugin_keyboard_input;
+use plugin_keyboard_input::KeyboardInputPlugin;
 
+mod plugin_game_controller;
+use plugin_game_controller::GameController;
 
 
 fn main() {
@@ -43,9 +47,11 @@ fn main() {
         .add_systems(Startup, setup_camera)
         .add_plugins(Model)
         .add_plugins(Scoreboard)
+        .add_plugins(GroundPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
-        .add_plugins(GroundPlugin)
+        .add_plugins(KeyboardInputPlugin)
+        .add_plugins(GameController)
         .run();
 }
 
