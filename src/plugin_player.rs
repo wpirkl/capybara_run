@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::{GameData, GameEnd, GameState, PlayerJump};
+use crate::model::{GameData, GameEnd, GameReset, GameState, PlayerJump};
 use crate::plugin_enemy::EnemySprite;
 
 pub struct PlayerPlugin;
@@ -12,9 +12,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
-           .add_systems(Update, (execute_animations, update_jump))
-           .add_systems(FixedUpdate, check_for_collisions)
-           .add_observer(handle_input);
+           .add_systems(Update, execute_animations)
+           .add_systems(FixedUpdate, (check_for_collisions, update_jump))
+           .add_observer(handle_input)
+           .add_observer(handle_player_reset);
     }
 }
 
@@ -271,4 +272,16 @@ fn check_for_collisions(
             }
         }
     }
+}
+
+fn handle_player_reset(
+    _evt: On<GameReset>,
+    mut player_query: Query<(&mut PlayerState), With<PlayerSprite>>
+)
+{
+    for mut player_state in &mut player_query {
+
+        *player_state = PlayerState::Running;
+    }
+
 }

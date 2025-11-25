@@ -1,28 +1,23 @@
 use bevy::prelude::*;
 
-use crate::model::{GameData, GameStart, GameState, PlayerJump};
+use crate::model::{GameData, GameStart, GameState, PlayerJump, GameReset};
 
 
 pub struct KeyboardInputPlugin;
 
 impl Plugin for KeyboardInputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup_keyboard_input)
-           .add_systems(Update, handle_input);
+        app//.add_systems(Startup, setup_keyboard_input)
+           .add_systems(FixedUpdate, handle_input);
     }
 }
 
-
-fn setup_keyboard_input(mut commands: Commands) {
-
-
-}
 
 
 fn handle_input(
     mut commands: Commands,
     keyboard: Res<ButtonInput<KeyCode>>,
-    mut game: ResMut<GameData>
+    game: ResMut<GameData>
 ) {
     if keyboard.just_pressed(KeyCode::Space){
         match game.game_state {
@@ -35,8 +30,10 @@ fn handle_input(
             }
 
             GameState::Dead => {
-                commands.trigger(GameStart);
+                commands.trigger(GameReset);
             }
+
+            _ => {}
         }
 }
 }

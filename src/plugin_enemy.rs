@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::{GameData, GameState};
+use crate::model::{GameData, GameReset, GameState};
 
 pub struct EnemyPlugin;
 
@@ -12,7 +12,8 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_enemies)
             .add_systems(Update, execute_animations)
-            .add_systems(Update, move_enemy);
+            .add_systems(FixedUpdate, move_enemy)
+            .add_observer(handle_enemy_reset);
     }
 }
 
@@ -186,4 +187,18 @@ fn move_enemy(
         }
         _ => {}
     }
+}
+
+
+fn handle_enemy_reset(
+    _evt: On<GameReset>,
+    mut commands: Commands,
+    enemy_query: Query<(Entity), With<EnemySprite>>,
+)
+{
+    for enemy_entity in & enemy_query {
+
+        commands.entity(enemy_entity).despawn();
+    }
+
 }

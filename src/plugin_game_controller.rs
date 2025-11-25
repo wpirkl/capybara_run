@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::model::{GameData, GameEnd, GameStart, GameState};
+use crate::model::{GameData, GameEnd, GameReset, GameStart, GameState};
 
 pub struct GameController;
 

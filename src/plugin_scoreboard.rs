@@ -45,6 +45,7 @@ fn setup_scoreboard(mut commands: Commands)
     ));
 }
 
+
 fn update_scoreboard(
     game: Res<GameData>,
     score_root: Single<Entity, (With<ScoreboardUi>, With<Text>)>,

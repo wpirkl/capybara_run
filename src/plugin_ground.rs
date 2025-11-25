@@ -11,7 +11,7 @@ pub struct GroundPlugin;
 impl Plugin for GroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_ground)
-            .add_systems(Update, move_ground);
+           .add_systems(FixedUpdate, move_ground);
     }
 }
 
