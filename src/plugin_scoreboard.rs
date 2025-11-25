@@ -51,5 +51,6 @@ fn update_scoreboard(
     score_root: Single<Entity, (With<ScoreboardUi>, With<Text>)>,
     mut writer: TextUiWriter,
 ) {
-    *writer.text(*score_root, 1) = game.current_score.to_string();
+    let current_score = game.current_score as usize;
+    *writer.text(*score_root, 1) = current_score.to_string();
 }

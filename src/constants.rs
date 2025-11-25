@@ -16,3 +16,7 @@ pub const SCOREBOARD_FONT_SIZE: f32 = 33.;
 pub const TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.);
 pub const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
 pub const SCORE_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+
+pub const SIGN_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
+pub const SIGN_FONT_SIZE: f32 = 33.;
+pub const SIGN_OFFSET_Y: f32 = 33.;

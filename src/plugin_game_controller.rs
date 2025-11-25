@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::model::{GameData, GameEnd, GameReset, GameStart, GameState};
+use crate::model::{GameData, GameEnd, GameStart, GameState};
 
 pub struct GameController;
 
@@ -39,7 +39,7 @@ fn update_distance(
     match game.game_state {
         GameState::Running => {
             let move_distance = game.velocity * time.delta_secs();
-            game.current_score += move_distance as usize;
+            game.current_score += move_distance;
         }
         _ => {}
     }

@@ -31,7 +31,7 @@ struct GroundTextures {
     dirt: Handle<Image>,
     grass: Handle<Image>,
     water: Handle<Image>,
-    sign: Handle<Image>,
+    tombstone: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
 }
 
@@ -44,18 +44,18 @@ fn setup_ground(
     let dirt_texture = asset_server.load("textures/ground/dirt_top.png");
     let grass_texture = asset_server.load("textures/ground/grass_top.png");
     let water_texture = asset_server.load("textures/ground/water_top.png");
-    let sign_texture = asset_server.load("textures/ground/distance_sign.png");
+    let tombstone_texture = asset_server.load("textures/ground/rip.png");
     
     // Create texture atlas layout (1 sprite, 240x240)
     let layout = TextureAtlasLayout::from_grid(UVec2::splat(240), 1, 1, None, None);
     let layout_handle = texture_atlas_layouts.add(layout);
-
+ 
     // Store textures as a resource for spawning new tiles
     commands.insert_resource(GroundTextures {
         dirt: dirt_texture.clone(),
         grass: grass_texture.clone(),
         water: water_texture.clone(),
-        sign: sign_texture.clone(),
+        tombstone: tombstone_texture.clone(),
         layout: layout_handle.clone(),
     });
 
@@ -107,6 +107,26 @@ fn spawn_ground_tile(
     ));
 }
 
+
+fn spawn_tombstone(
+    commands: &mut Commands,
+    x: f32,
+    tombstone_texture: &Handle<Image>,
+    layout: &Handle<TextureAtlasLayout>,
+) {
+    let texture = tombstone_texture.clone();
+
+    commands.spawn((
+        Sprite {
+            image: texture,
+            texture_atlas: Some(TextureAtlas { layout: layout.clone(), index: 0 }), ..default()
+        },
+        Transform::from_xyz(x, PLAYER_GROUND, -1.0).with_scale(Vec3::splat((TILE_SCALE))),
+        GroundTile
+    ));
+}
+
+
 fn move_ground(
     mut commands: Commands,
     time: Res<Time>,
@@ -139,7 +159,7 @@ fn move_ground(
 
             // Check if we need to spawn a new tile on the right
             // Spawn when the rightmost tile has moved far enough left to leave a gap
-            if rightmost_x < right_edge - SCALED_TILE_SIZE / 2.0 {
+            if rightmost_x < right_edge - SCALED_TILE_SIZE / 2. {
                 let new_x = rightmost_x + SCALED_TILE_SIZE;
                 spawn_ground_tile(
                     &mut commands,

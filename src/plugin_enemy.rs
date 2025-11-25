@@ -166,18 +166,10 @@ fn move_enemy(
         GameState::Running => {
             let move_distance = game.velocity * time.delta_secs();
             let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
-            let right_edge = WINDOW_WIDTH / 2.0;
-
-            let mut rightmost_x = f32::MIN;
 
             for (entity, mut transform) in &mut query {
                 // Move tile to the left
                 transform.translation.x -= move_distance;
-
-                // Track the rightmost tile position
-                if transform.translation.x > rightmost_x {
-                    rightmost_x = transform.translation.x;
-                }
 
                 // If tile has moved off the left edge, despawn it
                 if transform.translation.x < left_edge {
@@ -198,7 +190,7 @@ fn handle_enemy_reset(
 {
     for enemy_entity in & enemy_query {
 
-        commands.entity(enemy_entity).despawn();
+        commands.entity(enemy_entity).despawn(); 
     }
 
 }
