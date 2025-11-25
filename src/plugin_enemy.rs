@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::Velocity;
+use crate::model::Game;
 
 pub struct EnemyPlugin;
 
@@ -158,10 +158,10 @@ fn execute_animations(
 fn move_enemy(
     mut commands: Commands,
     time: Res<Time>,
-    speed: Res<Velocity>,
+    game: Res<Game>,
     mut query: Query<(Entity, &mut Transform), With<EnemySprite>>,
 ) {
-    let move_distance = speed.0 * time.delta_secs();
+    let move_distance = game.velocity * time.delta_secs();
     let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
     let right_edge = WINDOW_WIDTH / 2.0;
 

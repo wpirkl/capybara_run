@@ -3,7 +3,8 @@
 use std::time::Duration;
 use bevy::prelude::*;
 
-use crate::model::{Velocity, Score};
+use crate::constants::*;
+use crate::model::Game;
 use crate::plugin_enemy::EnemySprite;
 
 pub struct PlayerPlugin;
@@ -11,8 +12,8 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
-           .add_systems(Update, (handle_input, execute_animations, update_jump));
-           // .add_systems(FixedUpdate, check_for_collisions);
+           .add_systems(Update, (handle_input, execute_animations, update_jump))
+           .add_systems(FixedUpdate, check_for_collisions);
     }
 }
 
@@ -143,6 +144,7 @@ fn update_jump(
     mut query: Query<(&mut Transform, &mut Jump, &mut PlayerState, &mut Sprite), With<PlayerSprite>>,
 ) {
     for (mut transform, mut jump, mut state, mut sprite) in &mut query {
+
         if *state == PlayerState::Jumping {
             // Apply jump velocity on state change
             if jump.velocity == 0.0 {
@@ -233,14 +235,23 @@ fn execute_animations(
     }
 }
 
-/*
+
 fn check_for_collisions(
     mut commands: Commands,
-    mut score: ResMut<Score>,
-    speed: Res<Velocity>,
-    player_query: Query<(&mut Transform, &mut PlayerState, &mut Sprite), With<PlayerSprite>>,
-    collider_query: Query<(Entity, &Transform), With<EnemySprite>>,
+    mut game: ResMut<Game>,
+    mut player_query: Query<(&Transform, &mut PlayerState), With<PlayerSprite>>,
+    enemy_query: Query<(&Transform), With<EnemySprite>>,
 ) {
-    
+    for enemy_transform in & enemy_query {
+
+        for (player_transform, mut player_state) in & mut player_query {
+
+            let distance = player_transform.translation.distance(enemy_transform.translation);
+            
+            if distance < COLLISION_RADIUS
+            {
+                *player_state = PlayerState::Dead;
+            }
+        }
+    }
 }
-*/

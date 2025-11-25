@@ -106,11 +106,11 @@ fn spawn_ground_tile(
 fn move_ground(
     mut commands: Commands,
     time: Res<Time>,
-    speed: Res<Velocity>,
+    game: Res<Game>,
     textures: Res<GroundTextures>,
     mut query: Query<(Entity, &mut Transform), With<GroundTile>>,
 ) {
-    let move_distance = speed.0 * time.delta_secs();
+    let move_distance = game.velocity * time.delta_secs();
     let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
     let right_edge = WINDOW_WIDTH / 2.0;
 

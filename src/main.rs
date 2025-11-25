@@ -3,6 +3,15 @@
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
+mod constants;
+use constants::*;
+
+mod model;
+use model::Model;
+
+mod plugin_scoreboard;
+use plugin_scoreboard::Scoreboard;
+
 mod plugin_player;
 use plugin_player::PlayerPlugin;
 
@@ -12,11 +21,7 @@ use plugin_enemy::EnemyPlugin;
 mod plugin_ground;
 use plugin_ground::GroundPlugin;
 
-mod constants;
-use constants::*;
 
-mod model;
-use model::Model;
 
 
 fn main() {
@@ -36,10 +41,11 @@ fn main() {
         )
         .insert_resource(ClearColor(Color::WHITE))
         .add_systems(Startup, setup_camera)
+        .add_plugins(Model)
+        .add_plugins(Scoreboard)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(GroundPlugin)
-        .add_plugins(Model)
         .run();
 }
 
