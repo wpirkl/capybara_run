@@ -3,12 +3,16 @@
 use std::time::Duration;
 use bevy::prelude::*;
 
+use crate::model::{Velocity, Score};
+use crate::plugin_enemy::EnemySprite;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_player)
-            .add_systems(Update, (handle_input, execute_animations, update_jump));
+           .add_systems(Update, (handle_input, execute_animations, update_jump));
+           // .add_systems(FixedUpdate, check_for_collisions);
     }
 }
 
@@ -228,3 +232,15 @@ fn execute_animations(
         }
     }
 }
+
+/*
+fn check_for_collisions(
+    mut commands: Commands,
+    mut score: ResMut<Score>,
+    speed: Res<Velocity>,
+    player_query: Query<(&mut Transform, &mut PlayerState, &mut Sprite), With<PlayerSprite>>,
+    collider_query: Query<(Entity, &Transform), With<EnemySprite>>,
+) {
+    
+}
+*/

@@ -3,18 +3,18 @@
 use bevy::prelude::*;
 use rand::Rng;
 
+use crate::constants::*;
+use crate::model::*;
+
 pub struct GroundPlugin;
 
 impl Plugin for GroundPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GroundSpeed(200.0))
-            .add_systems(Startup, setup_ground)
+        app.add_systems(Startup, setup_ground)
             .add_systems(Update, move_ground);
     }
 }
 
-#[derive(Resource)]
-struct GroundSpeed(f32);
 
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 enum GroundType {
@@ -33,13 +33,6 @@ struct GroundTextures {
     water: Handle<Image>,
     layout: Handle<TextureAtlasLayout>,
 }
-
-const TILE_SIZE: f32 = 240.0;
-const TILE_SCALE: f32 = 0.5;
-const SCALED_TILE_SIZE: f32 = TILE_SIZE * TILE_SCALE;
-const GROUND_Y: f32 = -400.0; // Bottom of the screen
-const WINDOW_WIDTH: f32 = 1200.0;
-const WINDOW_HEIGHT: f32 = 800.0;
 
 fn setup_ground(
     mut commands: Commands,
@@ -113,7 +106,7 @@ fn spawn_ground_tile(
 fn move_ground(
     mut commands: Commands,
     time: Res<Time>,
-    speed: Res<GroundSpeed>,
+    speed: Res<Velocity>,
     textures: Res<GroundTextures>,
     mut query: Query<(Entity, &mut Transform), With<GroundTile>>,
 ) {

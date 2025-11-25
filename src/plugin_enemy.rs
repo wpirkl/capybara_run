@@ -3,12 +3,16 @@
 use std::time::Duration;
 use bevy::prelude::*;
 
+use crate::constants::*;
+use crate::model::Velocity;
+
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_enemies)
-            .add_systems(Update, execute_animations);
+            .add_systems(Update, execute_animations)
+            .add_systems(Update, move_enemy);
     }
 }
 
@@ -43,7 +47,7 @@ impl AnimationConfig {
 }
 
 #[derive(Component)]
-struct EnemySprite;
+pub struct EnemySprite;
 
 fn setup_enemies(
     mut commands: Commands,
@@ -147,6 +151,34 @@ fn execute_animations(
                 }
             }
             config.frame_timer = AnimationConfig::timer_from_fps(config.fps);
+        }
+    }
+}
+
+fn move_enemy(
+    mut commands: Commands,
+    time: Res<Time>,
+    speed: Res<Velocity>,
+    mut query: Query<(Entity, &mut Transform), With<EnemySprite>>,
+) {
+    let move_distance = speed.0 * time.delta_secs();
+    let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
+    let right_edge = WINDOW_WIDTH / 2.0;
+
+    let mut rightmost_x = f32::MIN;
+
+    for (entity, mut transform) in &mut query {
+        // Move tile to the left
+        transform.translation.x -= move_distance;
+
+        // Track the rightmost tile position
+        if transform.translation.x > rightmost_x {
+            rightmost_x = transform.translation.x;
+        }
+
+        // If tile has moved off the left edge, despawn it
+        if transform.translation.x < left_edge {
+            commands.entity(entity).despawn();
         }
     }
 }

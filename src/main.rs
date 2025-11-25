@@ -12,6 +12,13 @@ use plugin_enemy::EnemyPlugin;
 mod plugin_ground;
 use plugin_ground::GroundPlugin;
 
+mod constants;
+use constants::*;
+
+mod model;
+use model::Model;
+
+
 fn main() {
     App::new()
         .add_plugins(
@@ -19,7 +26,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        resolution: WindowResolution::new(1200, 800),
+                        resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32),
                         resizable: false,
                         title: "Bevy Player".to_string(),
                         ..default()
@@ -32,6 +39,7 @@ fn main() {
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(GroundPlugin)
+        .add_plugins(Model)
         .run();
 }
 
