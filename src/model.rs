@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::constants::INITIAL_VELOCITY;
 
 
+#[derive(PartialEq)]
 pub enum GameState {
     Starting,
     Running,
@@ -18,6 +19,10 @@ pub struct Game{
 }
 
 
+#[derive(Event)]
+pub struct GameEnd;
+
+
 pub struct Model;
 impl Plugin for Model {
     fn build(&self, app: &mut App) {
@@ -29,3 +34,4 @@ impl Plugin for Model {
         });
     }
 }
+

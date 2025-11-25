@@ -4,7 +4,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::constants::*;
-use crate::model::Game;
+use crate::model::{Game, GameState, GameEnd};
 use crate::plugin_enemy::EnemySprite;
 
 pub struct PlayerPlugin;
@@ -127,6 +127,7 @@ fn setup_player(
     ));
 }
 
+
 fn handle_input(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut PlayerState, &Jump), With<PlayerSprite>>,
@@ -139,8 +140,10 @@ fn handle_input(
     }
 }
 
+
 fn update_jump(
     time: Res<Time>,
+    game: Res<Game>,
     mut query: Query<(&mut Transform, &mut Jump, &mut PlayerState, &mut Sprite), With<PlayerSprite>>,
 ) {
     for (mut transform, mut jump, mut state, mut sprite) in &mut query {
@@ -168,11 +171,19 @@ fn update_jump(
             if transform.translation.y <= jump.ground_y {
                 transform.translation.y = jump.ground_y;
                 jump.velocity = 0.0;
-                *state = PlayerState::Running;
+                match game.game_state {
+                    GameState::Dead => {
+                        *state = PlayerState::Dead;
+                    }
+                    _ => {
+                        *state = PlayerState::Running;
+                    }
+                }
             }
         }
     }
 }
+
 
 fn execute_animations(
     time: Res<Time>,
@@ -250,7 +261,16 @@ fn check_for_collisions(
             
             if distance < COLLISION_RADIUS
             {
-                *player_state = PlayerState::Dead;
+                match *player_state {
+                    PlayerState::Running => {
+                        *player_state = PlayerState::Dead;
+                    }
+                    _ => {}
+                }
+
+                // *player_state = PlayerState::Dead;
+                game.game_state = GameState::Dead;
+                commands.trigger(GameEnd);
             }
         }
     }
