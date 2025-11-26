@@ -1,0 +1,13 @@
+- Create a game model containing
+    - ~~Constants~~
+    - ~~Player current score~~
+    - ~~Player previous score~~
+    - ~~Velocity~~
+- ~~Make the enemies move with the ground~~
+- ~~Collision of an enemy with the player leads to the death animation~~
+- ~~Count the distance of the player~~
+- ~~Show the Score~~
+- Start Screen
+- Death Screen
+- Remember the last distance of the player and show the tombstone
+- ~~Restart the game after death~~
