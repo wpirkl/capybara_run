@@ -40,7 +40,7 @@ fn main() {
                     primary_window: Some(Window {
                         resolution: WindowResolution::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32),
                         resizable: false,
-                        title: "Bevy Player".to_string(),
+                        title: "Capy Run!".to_string(),
                         ..default()
                     }),
                     ..default()
