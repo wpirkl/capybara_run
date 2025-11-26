@@ -11,6 +11,11 @@ pub const COLLISION_RADIUS: f32 = 60.;
 
 pub const PLAYER_X: f32 = -600.0 + (WINDOW_WIDTH * 0.20);
 pub const PLAYER_GROUND: f32 = GROUND_Y + (WINDOW_HEIGHT * 0.33);
+pub const ENEMY_WALKING_Y: f32 = PLAYER_GROUND;
+pub const ENEMY_FLYING_Y: f32 = ENEMY_WALKING_Y + 150.;
+pub const ENEMY_MINIMUM_SPACE: f32 = 500.;
+pub const ENEMY_MAXIMUM_SPACE: f32 = 1000.;
+pub const ENEMY_INITIAL_X: f32 = 500.;
 
 pub const SCOREBOARD_FONT_SIZE: f32 = 33.;
 pub const TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.);
