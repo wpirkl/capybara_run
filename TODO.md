@@ -9,5 +9,5 @@
 - ~~Show the Score~~
 - Start Screen
 - Death Screen
-- Remember the last distance of the player and show the tombstone
+- ~~Remember the last distance of the player and show the tombstone~~
 - ~~Restart the game after death~~

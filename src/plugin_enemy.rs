@@ -12,7 +12,7 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_enemies)
-            .add_systems(Update, execute_animations)
+            .add_systems(Update, (sync_enemy_sprites, execute_animations))
             .add_systems(FixedUpdate, move_enemy)
             .add_observer(handle_enemy_reset);
     }
@@ -69,6 +69,12 @@ impl AnimationConfig {
 #[derive(Component)]
 pub struct EnemySprite;
 
+/// Controller component: normalized X where 0.0 == player X, 1.0 == right edge
+#[derive(Component)]
+struct Enemy {
+    normalized_x: f32,
+}
+
 fn setup_enemies(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -100,15 +106,19 @@ fn setup_enemies(
 
     commands.insert_resource(textures.clone());
 
-    spawn_enemy(&mut commands, ENEMY_INITIAL_X, &textures);
+    // compute normalized initial x from ENEMY_INITIAL_X
+    let right_edge = WINDOW_WIDTH / 2.0;
+    let span = right_edge - PLAYER_X;
+    let normalized_initial = (ENEMY_INITIAL_X - PLAYER_X) / span;
+    spawn_enemy(&mut commands, normalized_initial, &textures);
 
 }
 
 
 fn spawn_enemy(
     commands: &mut Commands,
-    x: f32,
-    textures: &EnemyTextures
+    normalized_x: f32,
+    textures: &EnemyTextures,
 ) {
     // Randomly choose an enemy type
     let mut rng = rand::rng();
@@ -131,16 +141,26 @@ fn spawn_enemy(
 
     let enemy_distance = rng.random_range(ENEMY_MINIMUM_SPACE..ENEMY_MAXIMUM_SPACE);
 
+    // We'll spawn at normalized_x offset by enemy_distance in world space converted to normalized
+    let right_edge = WINDOW_WIDTH / 2.0;
+    let span = right_edge - PLAYER_X;
+    let offset_norm = enemy_distance / span;
+    let spawn_norm = normalized_x + offset_norm;
+
+    // compute world x from normalized
+    let world_x = PLAYER_X + spawn_norm * span;
+
     commands.spawn((
         Sprite{
             image: enemy_texture.image.clone(),
             texture_atlas: Some(TextureAtlas { layout: enemy_texture.layout.clone(), index: 0 }),
             ..default()
         },
-        Transform::from_xyz(x + enemy_distance, y, 0.).with_scale(Vec3::splat(TILE_SCALE)),
+        Transform::from_xyz(world_x, y, 0.).with_scale(Vec3::splat(TILE_SCALE)),
         EnemySprite,
         enemy_type,
-        enemy_texture.animation.clone()
+        enemy_texture.animation.clone(),
+        Enemy { normalized_x: spawn_norm },
     ));
 }
 
@@ -168,40 +188,60 @@ fn execute_animations(
 }
 
 
+/// Sync sprite transforms from normalized controller
+fn sync_enemy_sprites(
+    mut query: Query<(&Enemy, &EnemyType, &mut Transform), With<EnemySprite>>,
+) {
+    let right_edge = WINDOW_WIDTH / 2.0;
+    let span = right_edge - PLAYER_X;
+
+    for (enemy, enemy_type, mut transform) in &mut query {
+        let world_x = PLAYER_X + enemy.normalized_x * span;
+        let y = match enemy_type {
+            EnemyType::Eagle => ENEMY_FLYING_Y,
+            _ => ENEMY_WALKING_Y,
+        };
+        transform.translation.x = world_x;
+        transform.translation.y = y;
+    }
+}
+
+
 fn move_enemy(
     mut commands: Commands,
     time: Res<Time>,
     game: Res<GameData>,
     textures: Res<EnemyTextures>,
-    mut query: Query<(Entity, &mut Transform), With<EnemySprite>>,
+    mut query: Query<(Entity, &mut Enemy), With<EnemySprite>>,
 ) {
     match game.game_state {
         GameState::Running => {
             let move_distance = game.velocity * time.delta_secs();
-            let left_edge = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
-            let right_edge = WINDOW_WIDTH / 2.0;
-            let mut rightmost_x = f32::MIN;
+            let left_edge_world = -WINDOW_WIDTH / 2.0 - SCALED_TILE_SIZE;
+            let right_edge_world = WINDOW_WIDTH / 2.0;
+            let span = right_edge_world - PLAYER_X;
+            let left_edge_norm = (left_edge_world - PLAYER_X) / span;
 
-            for (entity, mut transform) in &mut query {
-                // Move tile to the left
-                transform.translation.x -= move_distance;
+            let mut rightmost_norm = f32::MIN;
 
-                // Track the rightmost enemy position
-                if transform.translation.x > rightmost_x {
-                    rightmost_x = transform.translation.x;
+            // Move enemies by converting move_distance into normalized space
+            let move_norm = move_distance / span;
+
+            for (entity, mut enemy) in &mut query {
+                enemy.normalized_x -= move_norm;
+
+                if enemy.normalized_x > rightmost_norm {
+                    rightmost_norm = enemy.normalized_x;
                 }
 
-                // If tile has moved off the left edge, despawn it
-                if transform.translation.x < left_edge {
+                if enemy.normalized_x < left_edge_norm {
                     commands.entity(entity).despawn();
                 }
             }
 
-            // Check if we need to spawn a new tile on the right
-            // Spawn when the rightmost tile has moved far enough left to leave a gap
-            if rightmost_x < right_edge - SCALED_TILE_SIZE / 2. {
-                
-                spawn_enemy(&mut commands, rightmost_x, &textures);
+            // Spawn when rightmost normalized is sufficiently left
+            if rightmost_norm < 1.0 - (SCALED_TILE_SIZE / span) / 2.0 {
+                spawn_enemy(&mut commands, rightmost_norm, &textures);
             }
         }
         _ => {}
@@ -217,9 +257,12 @@ fn handle_enemy_reset(
 )
 {
     for enemy_entity in & enemy_query {
-
         commands.entity(enemy_entity).despawn(); 
     }
 
-    spawn_enemy(&mut commands, ENEMY_INITIAL_X, &textures);
+    // respawn at normalized initial
+    let right_edge = WINDOW_WIDTH / 2.0;
+    let span = right_edge - PLAYER_X;
+    let normalized_initial = (ENEMY_INITIAL_X - PLAYER_X) / span;
+    spawn_enemy(&mut commands, normalized_initial, &textures);
 }

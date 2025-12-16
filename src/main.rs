@@ -30,6 +30,8 @@ use plugin_keyboard_input::KeyboardInputPlugin;
 mod plugin_game_controller;
 use plugin_game_controller::GameController;
 
+mod plugin_tombstone;
+use plugin_tombstone::TombstonePlugin;
 
 fn main() {
     App::new()
@@ -55,6 +57,7 @@ fn main() {
         .add_plugins(EnemyPlugin)
         .add_plugins(KeyboardInputPlugin)
         .add_plugins(GameController)
+        .add_plugins(TombstonePlugin)
         .run();
 }
 

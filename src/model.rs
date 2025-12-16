@@ -15,7 +15,7 @@ pub enum GameState {
 #[derive(Resource)]
 pub struct GameData {
     pub game_state: GameState,
-    pub previous_score: f32,
+    pub previous_score: Option<f32>,
     pub current_score: f32,
     pub velocity: f32,
 }
@@ -42,7 +42,7 @@ impl Plugin for Model {
     fn build(&self, app: &mut App) {
         app.insert_resource(GameData {
             game_state: GameState::WaitingForStart,
-            previous_score: 0.,
+            previous_score: None,
             current_score: 0.,
             velocity: INITIAL_VELOCITY
         }).add_observer(handle_model_reset);
@@ -54,7 +54,7 @@ fn handle_model_reset(
     mut game: ResMut<GameData>
 )
 {
-    game.previous_score = game.current_score;
+    game.previous_score = Some(game.current_score);
     game.current_score = 0.;
     game.velocity = INITIAL_VELOCITY;
     game.game_state = GameState::WaitingForStart;
